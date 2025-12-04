@@ -1,17 +1,19 @@
 # API_Petshop_2.0
 
-🐶🐾 API Petshop 2.0 — Gestão Completa de Funcionários, Clientes, Pets e Agendamentos
+# 🐶🐾 API Petshop 2.0 — Gestão Completa de Funcionários, Clientes, Pets e Agendamentos
+
 
 Bem-vindo(a) à API Petshop 2.0, um sistema completo desenvolvido para ajudar petshops a gerenciarem funcionários, clientes, pets e agendamentos de forma simples, rápida e integrada.
 
 Esta API inclui CRUD completo de todos os recursos, integração com banco de dados via Prisma, validação de dados com Zod, frontend e backend escritos em TypeScript, e um dashboard com métricas gerais dos cadastros.
 
-🚀 Demonstração
+# 🚀 Demonstração
 
 🔗 API hospedada no Render:
 https://api-petshop-2-0-1.onrender.com
 
-🧩 Funcionalidades
+# 🧩 Funcionalidades
+
 ✔️ Gestão completa com CRUD:
 
 Funcionários
@@ -22,7 +24,7 @@ Pets
 
 Agendamentos (com calendário)
 
-📊 Dashboard inteligente
+# 📊 Dashboard inteligente
 
 Nosso diferencial é um dashboard com estatísticas gerais, incluindo:
 
@@ -34,7 +36,7 @@ Comparações entre períodos
 
 Dados atualizados automaticamente
 
-🛠️ Stack utilizada
+# 🛠️ Stack utilizada
 
 Frontend: React + TypeScript + Axios + Tailwind + ShadCN
 
@@ -44,12 +46,13 @@ Banco: PostgreSQL (Neon)
 
 Deploy: Render (frontend + backend)
 
-📁 Estrutura do Projeto
+# 📁 Estrutura do Projeto
+
 API_Petshop_2.0
  ├── backend
  └── frontend
 
-🔌 Endpoints principais (exemplo)
+# 🔌 Endpoints principais (exemplo)
 Pets
 GET    /pets
 POST   /pets
@@ -68,11 +71,11 @@ POST   /agendamentos
 PUT    /agendamentos/:id
 DELETE /agendamentos/:id
 
-☁️ Mini Tutorial — Como fazer deploy no Render
+#  ☁️ Mini Tutorial — Como fazer deploy no Render
 
 A seguir está o guia resumido para subir o frontend e backend no Render a partir do GitHub.
 
-🖥️ Deploy do Frontend (React + Vite)
+# 🖥️ Deploy do Frontend (React + Vite)
 
 No painel do Render:
 
@@ -99,7 +102,7 @@ dist
 
 Pronto! Render vai gerar a URL do frontend automaticamente.
 
-🛠️ Deploy do Backend (Node + Prisma)
+# 🛠️ Deploy do Backend (Node + Prisma)
 
 Crie um novo Web Service no Render e configure assim:
 
@@ -127,7 +130,7 @@ Start Command:
 
 npx prisma migrate deploy && npm run dev
 
-🔑 Variáveis de Ambiente
+# 🔑 Variáveis de Ambiente
 
 Crie a seguinte variável:
 
@@ -140,10 +143,5 @@ Value:
 
 postgresql://neondb_owner:npg_Ph68YfMnJUZe@ep-crimson-water-ac6ob5b8-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
 
-🐾 Contribuições
-
-Sinta-se livre para abrir issues ou enviar pull requests. Toda ajuda é bem-vinda!
-
-📜 Licença
 
 Este projeto é livre para uso educacional e aprimoramento.
