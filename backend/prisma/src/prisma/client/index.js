@@ -186,7 +186,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\computaria\\API_Petshop_2.0\\backend\\prisma\\src\\prisma\\client",
+      "value": "C:\\Users\\buuch\\OneDrive\\Documents\\GitHub\\API_Petshop_2.0\\backend\\prisma\\src\\prisma\\client",
       "fromEnvVar": null
     },
     "config": {
@@ -200,7 +200,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\computaria\\API_Petshop_2.0\\backend\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\buuch\\OneDrive\\Documents\\GitHub\\API_Petshop_2.0\\backend\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -214,7 +214,7 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
-  "postinstall": false,
+  "postinstall": true,
   "inlineDatasources": {
     "db": {
       "url": {
