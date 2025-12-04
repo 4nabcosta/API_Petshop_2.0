@@ -1,0 +1,211 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --background: 40 33% 98%;
+    --foreground: 220 20% 20%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 20%;
+
+    --primary: 168 50% 42%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 24 80% 65%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 40 20% 94%;
+    --muted-foreground: 220 10% 50%;
+
+    --accent: 168 40% 92%;
+    --accent-foreground: 168 50% 30%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 40 20% 88%;
+    --input: 40 20% 88%;
+    --ring: 168 50% 42%;
+
+    --radius: 0.75rem;
+
+    /* Custom colors */
+    --coral: 24 80% 65%;
+    --coral-light: 24 80% 92%;
+    --teal: 168 50% 42%;
+    --teal-light: 168 40% 92%;
+    --cream: 40 33% 98%;
+    --warm-gray: 30 10% 60%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(168 50% 42%) 0%, hsl(168 60% 35%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(24 80% 65%) 0%, hsl(24 85% 55%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(168 50% 42%) 0%, hsl(180 45% 35%) 50%, hsl(24 70% 60%) 100%);
+
+    /* Shadows */
+    --shadow-sm: 0 2px 8px -2px hsl(220 20% 20% / 0.08);
+    --shadow-md: 0 8px 24px -8px hsl(220 20% 20% / 0.12);
+    --shadow-lg: 0 16px 48px -12px hsl(220 20% 20% / 0.15);
+    --shadow-glow: 0 0 40px hsl(168 50% 42% / 0.2);
+
+    /* Fonts */
+    --font-display: 'Quicksand', sans-serif;
+    --font-body: 'Nunito', sans-serif;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 20% 20%;
+    --sidebar-primary: 168 50% 42%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 168 40% 92%;
+    --sidebar-accent-foreground: 168 50% 30%;
+    --sidebar-border: 40 20% 88%;
+    --sidebar-ring: 168 50% 42%;
+  }
+
+  .dark {
+    --background: 220 25% 10%;
+    --foreground: 40 20% 95%;
+
+    --card: 220 20% 14%;
+    --card-foreground: 40 20% 95%;
+
+    --popover: 220 20% 14%;
+    --popover-foreground: 40 20% 95%;
+
+    --primary: 168 50% 50%;
+    --primary-foreground: 220 25% 10%;
+
+    --secondary: 24 70% 55%;
+    --secondary-foreground: 220 25% 10%;
+
+    --muted: 220 15% 20%;
+    --muted-foreground: 40 10% 60%;
+
+    --accent: 168 30% 20%;
+    --accent-foreground: 168 50% 70%;
+
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 168 50% 50%;
+
+    --sidebar-background: 220 20% 12%;
+    --sidebar-foreground: 40 20% 95%;
+    --sidebar-primary: 168 50% 50%;
+    --sidebar-primary-foreground: 220 25% 10%;
+    --sidebar-accent: 168 30% 20%;
+    --sidebar-accent-foreground: 168 50% 70%;
+    --sidebar-border: 220 15% 20%;
+    --sidebar-ring: 168 50% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-bold;
+  }
+}
+
+@layer components {
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .gradient-secondary {
+    background: var(--gradient-secondary);
+  }
+
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .shadow-soft {
+    box-shadow: var(--shadow-sm);
+  }
+
+  .shadow-elevated {
+    box-shadow: var(--shadow-md);
+  }
+
+  .shadow-floating {
+    box-shadow: var(--shadow-lg);
+  }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .glass {
+    @apply bg-card/80 backdrop-blur-md;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background: var(--gradient-hero);
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-soft {
+    animation: pulse-soft 3s ease-in-out infinite;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.5s ease-out;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.4s ease-out;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes slide-up {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
