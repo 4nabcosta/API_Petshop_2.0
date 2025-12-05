@@ -1,4 +1,7 @@
 import express from "express";
+import dotenv from "dotenv";
+
+dotenv.config();  // <-- CARREGA O .env !!
 
 const app = express();
 const port = 3000;
