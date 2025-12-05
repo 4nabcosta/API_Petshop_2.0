@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePetShop } from '@/contexts/PetShopContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,12 +13,13 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { CalendarPlus } from 'lucide-react';
-import { ServiceType } from '@/types';
+import { CalendarPlus, Pencil } from 'lucide-react';
+import { ServiceType, Appointment } from '@/types';
 import { appointmentSchema, AppointmentFormData } from '@/lib/validations';
 import { ZodError } from 'zod';
 
 interface AppointmentFormProps {
+  appointment?: Appointment;
   onSuccess?: () => void;
 }
 
@@ -30,15 +31,22 @@ const serviceOptions: { value: ServiceType; label: string }[] = [
   { value: 'consultation', label: 'Consulta Geral' },
 ];
 
-export function AppointmentForm({ onSuccess }: AppointmentFormProps) {
-  const { addAppointment, customers, getPetsByCustomerId } = usePetShop();
+export function AppointmentForm({ appointment, onSuccess }: AppointmentFormProps) {
+  const { addAppointment, updateAppointment, customers, getPetsByCustomerId } = usePetShop();
+  const isEditing = !!appointment;
+
+  const formatDateForInput = (date: Date | string) => {
+    const d = new Date(date);
+    return d.toISOString().split('T')[0];
+  };
+
   const [formData, setFormData] = useState({
-    customerId: '',
-    petId: '',
-    service: '' as ServiceType | '',
-    date: '',
-    time: '',
-    notes: '',
+    customerId: appointment?.customerId || '',
+    petId: appointment?.petId || '',
+    service: (appointment?.service || '') as ServiceType | '',
+    date: appointment ? formatDateForInput(appointment.date) : '',
+    time: appointment?.time || '',
+    notes: appointment?.notes || '',
   });
   const [errors, setErrors] = useState<Partial<Record<keyof AppointmentFormData, string>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,6 +54,19 @@ export function AppointmentForm({ onSuccess }: AppointmentFormProps) {
   const customerPets = formData.customerId
     ? getPetsByCustomerId(formData.customerId)
     : [];
+
+  useEffect(() => {
+    if (appointment) {
+      setFormData({
+        customerId: appointment.customerId,
+        petId: appointment.petId,
+        service: appointment.service,
+        date: formatDateForInput(appointment.date),
+        time: appointment.time,
+        notes: appointment.notes,
+      });
+    }
+  }, [appointment]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,27 +84,38 @@ export function AppointmentForm({ onSuccess }: AppointmentFormProps) {
 
       const validatedData = appointmentSchema.parse(dataToValidate);
 
-      // TODO: Replace with API call when backend is ready
-      // await appointmentApi.create(validatedData);
-      addAppointment({
-        petId: validatedData.petId,
-        customerId: validatedData.customerId,
-        service: validatedData.service,
-        date: new Date(validatedData.date),
-        time: validatedData.time,
-        status: 'scheduled',
-        notes: validatedData.notes || '',
-      });
+      if (isEditing && appointment) {
+        updateAppointment(appointment.id, {
+          customerId: validatedData.customerId,
+          petId: validatedData.petId,
+          service: validatedData.service,
+          date: new Date(validatedData.date),
+          time: validatedData.time,
+          status: appointment.status,
+          notes: validatedData.notes || '',
+        });
+        toast.success('Agendamento atualizado com sucesso!');
+      } else {
+        addAppointment({
+          customerId: validatedData.customerId,
+          petId: validatedData.petId,
+          service: validatedData.service,
+          date: new Date(validatedData.date),
+          time: validatedData.time,
+          status: 'scheduled',
+          notes: validatedData.notes || '',
+        });
+        toast.success('Agendamento criado com sucesso!');
+        setFormData({
+          customerId: '',
+          petId: '',
+          service: '',
+          date: '',
+          time: '',
+          notes: '',
+        });
+      }
 
-      toast.success('Agendamento criado com sucesso!');
-      setFormData({
-        customerId: '',
-        petId: '',
-        service: '',
-        date: '',
-        time: '',
-        notes: '',
-      });
       setErrors({});
       onSuccess?.();
     } catch (error) {
@@ -96,7 +128,7 @@ export function AppointmentForm({ onSuccess }: AppointmentFormProps) {
         setErrors(fieldErrors);
         toast.error('Verifique os campos do formulário');
       } else {
-        toast.error('Erro ao criar agendamento');
+        toast.error(isEditing ? 'Erro ao atualizar agendamento' : 'Erro ao criar agendamento');
       }
     } finally {
       setIsSubmitting(false);
@@ -104,11 +136,20 @@ export function AppointmentForm({ onSuccess }: AppointmentFormProps) {
   };
 
   return (
-    <Card variant="elevated">
+    <Card className="shadow-elevated border-0">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <CalendarPlus className="h-5 w-5 text-primary" />
-          Novo Agendamento
+          {isEditing ? (
+            <>
+              <Pencil className="h-5 w-5 text-primary" />
+              Editar Agendamento
+            </>
+          ) : (
+            <>
+              <CalendarPlus className="h-5 w-5 text-primary" />
+              Novo Agendamento
+            </>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -117,9 +158,9 @@ export function AppointmentForm({ onSuccess }: AppointmentFormProps) {
             <Label>Cliente *</Label>
             <Select
               value={formData.customerId}
-              onValueChange={(value) =>
-                setFormData({ ...formData, customerId: value, petId: '' })
-              }
+              onValueChange={(value) => {
+                setFormData({ ...formData, customerId: value, petId: '' });
+              }}
             >
               <SelectTrigger className={errors.customerId ? 'border-destructive' : ''}>
                 <SelectValue placeholder="Selecione o cliente" />
@@ -145,12 +186,12 @@ export function AppointmentForm({ onSuccess }: AppointmentFormProps) {
               disabled={!formData.customerId}
             >
               <SelectTrigger className={errors.petId ? 'border-destructive' : ''}>
-                <SelectValue placeholder={formData.customerId ? 'Selecione o pet' : 'Selecione um cliente primeiro'} />
+                <SelectValue placeholder={formData.customerId ? "Selecione o pet" : "Selecione um cliente primeiro"} />
               </SelectTrigger>
               <SelectContent>
                 {customerPets.map((pet) => (
                   <SelectItem key={pet.id} value={pet.id}>
-                    {pet.name} ({pet.species})
+                    {pet.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -215,12 +256,12 @@ export function AppointmentForm({ onSuccess }: AppointmentFormProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="aptNotes">Observações</Label>
+            <Label htmlFor="notes">Observações</Label>
             <Textarea
-              id="aptNotes"
+              id="notes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Detalhes adicionais..."
+              placeholder="Informações adicionais sobre o atendimento"
               rows={3}
               className={errors.notes ? 'border-destructive' : ''}
             />
@@ -230,7 +271,10 @@ export function AppointmentForm({ onSuccess }: AppointmentFormProps) {
           </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Criando...' : 'Criar Agendamento'}
+            {isSubmitting 
+              ? (isEditing ? 'Atualizando...' : 'Agendando...') 
+              : (isEditing ? 'Atualizar Agendamento' : 'Criar Agendamento')
+            }
           </Button>
         </form>
       </CardContent>

@@ -11,8 +11,20 @@ import {
   DialogContent,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { PawPrint, Plus, Search, User, Scale, Clock } from 'lucide-react';
-import { PetSpecies } from '@/types';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { PawPrint, Plus, Search, User, Scale, Clock, Pencil, Trash2 } from 'lucide-react';
+import { PetSpecies, Pet } from '@/types';
+import { toast } from 'sonner';
 
 const speciesLabels: Record<PetSpecies, string> = {
   dog: 'Cachorro',
@@ -31,14 +43,26 @@ const speciesEmoji: Record<PetSpecies, string> = {
 };
 
 export default function Pets() {
-  const { pets, getCustomerById } = usePetShop();
+  const { pets, getCustomerById, deletePet } = usePetShop();
   const [search, setSearch] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingPet, setEditingPet] = useState<Pet | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const filteredPets = pets.filter((pet) =>
     pet.name.toLowerCase().includes(search.toLowerCase()) ||
     pet.breed.toLowerCase().includes(search.toLowerCase())
   );
+
+  const handleDelete = (id: string, name: string) => {
+    deletePet(id);
+    toast.success(`Pet "${name}" excluído com sucesso!`);
+  };
+
+  const handleEdit = (pet: Pet) => {
+    setEditingPet(pet);
+    setIsEditDialogOpen(true);
+  };
 
   return (
     <MainLayout>
@@ -53,8 +77,8 @@ export default function Pets() {
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="hero" size="lg">
-                <Plus className="h-5 w-5" />
+              <Button className="gradient-primary text-primary-foreground" size="lg">
+                <Plus className="h-5 w-5 mr-2" />
                 Novo Pet
               </Button>
             </DialogTrigger>
@@ -63,6 +87,21 @@ export default function Pets() {
             </DialogContent>
           </Dialog>
         </div>
+
+        {/* Edit Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            {editingPet && (
+              <PetForm 
+                pet={editingPet} 
+                onSuccess={() => {
+                  setIsEditDialogOpen(false);
+                  setEditingPet(null);
+                }} 
+              />
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Search */}
         <div className="relative max-w-md">
@@ -80,7 +119,7 @@ export default function Pets() {
           {filteredPets.map((pet) => {
             const owner = getCustomerById(pet.customerId);
             return (
-              <Card key={pet.id} variant="interactive" className="animate-fade-in">
+              <Card key={pet.id} className="animate-fade-in hover:shadow-elevated transition-shadow">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
@@ -92,7 +131,48 @@ export default function Pets() {
                         <p className="text-sm text-muted-foreground">{pet.breed || speciesLabels[pet.species]}</p>
                       </div>
                     </div>
-                    <Badge variant="success">{speciesLabels[pet.species]}</Badge>
+                    <div className="flex flex-col items-end gap-2">
+                      <Badge variant="secondary">{speciesLabels[pet.species]}</Badge>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleEdit(pet)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Tem certeza que deseja excluir o pet "{pet.name}"? 
+                                Esta ação também excluirá todos os agendamentos associados.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDelete(pet.id, pet.name)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Excluir
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">

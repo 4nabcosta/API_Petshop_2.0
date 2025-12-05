@@ -1,21 +1,11 @@
 {
   "files": [],
-  "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
-  ],
+  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     },
-
-    /* 🔥 ADIÇÕES IMPORTANTES PARA RESOLVER SEU ERRO */
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "types": ["node"],
-
-    /* Configurações que você já tinha */
     "noImplicitAny": false,
     "noUnusedParameters": false,
     "skipLibCheck": true,

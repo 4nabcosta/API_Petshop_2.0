@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePetShop } from '@/contexts/PetShopContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,12 +13,13 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { PawPrint } from 'lucide-react';
-import { PetSpecies } from '@/types';
+import { PawPrint, Pencil } from 'lucide-react';
+import { PetSpecies, Pet } from '@/types';
 import { petSchema, PetFormData } from '@/lib/validations';
 import { ZodError } from 'zod';
 
 interface PetFormProps {
+  pet?: Pet;
   onSuccess?: () => void;
 }
 
@@ -30,19 +31,35 @@ const speciesOptions: { value: PetSpecies; label: string }[] = [
   { value: 'other', label: 'Outro' },
 ];
 
-export function PetForm({ onSuccess }: PetFormProps) {
-  const { addPet, customers } = usePetShop();
+export function PetForm({ pet, onSuccess }: PetFormProps) {
+  const { addPet, updatePet, customers } = usePetShop();
+  const isEditing = !!pet;
+
   const [formData, setFormData] = useState({
-    name: '',
-    species: '' as PetSpecies | '',
-    breed: '',
-    age: '',
-    weight: '',
-    customerId: '',
-    notes: '',
+    name: pet?.name || '',
+    species: (pet?.species || '') as PetSpecies | '',
+    breed: pet?.breed || '',
+    age: pet?.age?.toString() || '',
+    weight: pet?.weight?.toString() || '',
+    customerId: pet?.customerId || '',
+    notes: pet?.notes || '',
   });
   const [errors, setErrors] = useState<Partial<Record<keyof PetFormData, string>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (pet) {
+      setFormData({
+        name: pet.name,
+        species: pet.species,
+        breed: pet.breed,
+        age: pet.age.toString(),
+        weight: pet.weight.toString(),
+        customerId: pet.customerId,
+        notes: pet.notes,
+      });
+    }
+  }, [pet]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,28 +78,39 @@ export function PetForm({ onSuccess }: PetFormProps) {
 
       const validatedData = petSchema.parse(dataToValidate);
 
-      // TODO: Replace with API call when backend is ready
-      // await petApi.create(validatedData);
-      addPet({
-        name: validatedData.name,
-        species: validatedData.species,
-        breed: validatedData.breed || '',
-        age: validatedData.age || 0,
-        weight: validatedData.weight || 0,
-        customerId: validatedData.customerId,
-        notes: validatedData.notes || '',
-      });
+      if (isEditing && pet) {
+        updatePet(pet.id, {
+          name: validatedData.name,
+          species: validatedData.species,
+          breed: validatedData.breed || '',
+          age: validatedData.age || 0,
+          weight: validatedData.weight || 0,
+          customerId: validatedData.customerId,
+          notes: validatedData.notes || '',
+        });
+        toast.success('Pet atualizado com sucesso!');
+      } else {
+        addPet({
+          name: validatedData.name,
+          species: validatedData.species,
+          breed: validatedData.breed || '',
+          age: validatedData.age || 0,
+          weight: validatedData.weight || 0,
+          customerId: validatedData.customerId,
+          notes: validatedData.notes || '',
+        });
+        toast.success('Pet cadastrado com sucesso!');
+        setFormData({
+          name: '',
+          species: '',
+          breed: '',
+          age: '',
+          weight: '',
+          customerId: '',
+          notes: '',
+        });
+      }
 
-      toast.success('Pet cadastrado com sucesso!');
-      setFormData({
-        name: '',
-        species: '',
-        breed: '',
-        age: '',
-        weight: '',
-        customerId: '',
-        notes: '',
-      });
       setErrors({});
       onSuccess?.();
     } catch (error) {
@@ -95,7 +123,7 @@ export function PetForm({ onSuccess }: PetFormProps) {
         setErrors(fieldErrors);
         toast.error('Verifique os campos do formulário');
       } else {
-        toast.error('Erro ao cadastrar pet');
+        toast.error(isEditing ? 'Erro ao atualizar pet' : 'Erro ao cadastrar pet');
       }
     } finally {
       setIsSubmitting(false);
@@ -103,11 +131,20 @@ export function PetForm({ onSuccess }: PetFormProps) {
   };
 
   return (
-    <Card variant="elevated">
+    <Card className="shadow-elevated border-0">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <PawPrint className="h-5 w-5 text-primary" />
-          Novo Pet
+          {isEditing ? (
+            <>
+              <Pencil className="h-5 w-5 text-primary" />
+              Editar Pet
+            </>
+          ) : (
+            <>
+              <PawPrint className="h-5 w-5 text-primary" />
+              Novo Pet
+            </>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -237,7 +274,10 @@ export function PetForm({ onSuccess }: PetFormProps) {
           </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Cadastrando...' : 'Cadastrar Pet'}
+            {isSubmitting 
+              ? (isEditing ? 'Atualizando...' : 'Cadastrando...') 
+              : (isEditing ? 'Atualizar Pet' : 'Cadastrar Pet')
+            }
           </Button>
         </form>
       </CardContent>

@@ -10,19 +10,44 @@ import {
   DialogContent,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Users, Plus, Search, Mail, Phone, MapPin, PawPrint } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Users, Plus, Search, Mail, Phone, MapPin, PawPrint, Pencil, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { toast } from 'sonner';
+import { Customer } from '@/types';
 
 export default function Customers() {
-  const { customers, getPetsByCustomerId } = usePetShop();
+  const { customers, getPetsByCustomerId, deleteCustomer } = usePetShop();
   const [search, setSearch] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const filteredCustomers = customers.filter((customer) =>
     customer.name.toLowerCase().includes(search.toLowerCase()) ||
     customer.email.toLowerCase().includes(search.toLowerCase())
   );
+
+  const handleDelete = (id: string, name: string) => {
+    deleteCustomer(id);
+    toast.success(`Cliente "${name}" excluído com sucesso!`);
+  };
+
+  const handleEdit = (customer: Customer) => {
+    setEditingCustomer(customer);
+    setIsEditDialogOpen(true);
+  };
 
   return (
     <MainLayout>
@@ -37,8 +62,8 @@ export default function Customers() {
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="hero" size="lg">
-                <Plus className="h-5 w-5" />
+              <Button className="gradient-primary text-primary-foreground" size="lg">
+                <Plus className="h-5 w-5 mr-2" />
                 Novo Cliente
               </Button>
             </DialogTrigger>
@@ -47,6 +72,21 @@ export default function Customers() {
             </DialogContent>
           </Dialog>
         </div>
+
+        {/* Edit Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            {editingCustomer && (
+              <CustomerForm 
+                customer={editingCustomer} 
+                onSuccess={() => {
+                  setIsEditDialogOpen(false);
+                  setEditingCustomer(null);
+                }} 
+              />
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Search */}
         <div className="relative max-w-md">
@@ -64,7 +104,7 @@ export default function Customers() {
           {filteredCustomers.map((customer) => {
             const customerPets = getPetsByCustomerId(customer.id);
             return (
-              <Card key={customer.id} variant="interactive" className="animate-fade-in">
+              <Card key={customer.id} className="animate-fade-in hover:shadow-elevated transition-shadow">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
@@ -77,6 +117,45 @@ export default function Customers() {
                           Cliente desde {format(new Date(customer.createdAt), "MMM 'de' yyyy", { locale: ptBR })}
                         </p>
                       </div>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => handleEdit(customer)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Tem certeza que deseja excluir o cliente "{customer.name}"? 
+                              Esta ação também excluirá todos os pets e agendamentos associados.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(customer.id, customer.name)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                 </CardHeader>

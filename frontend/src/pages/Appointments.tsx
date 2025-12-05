@@ -4,7 +4,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { AppointmentForm } from '@/components/forms/AppointmentForm';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
@@ -12,16 +12,28 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Calendar, Plus, Search, Clock, PawPrint, User } from 'lucide-react';
+import { Calendar, Plus, Search, Clock, PawPrint, User, Pencil, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { AppointmentStatus, ServiceType } from '@/types';
+import { AppointmentStatus, ServiceType, Appointment } from '@/types';
+import { toast } from 'sonner';
 
 const serviceLabels: Record<ServiceType, string> = {
   grooming: 'Tosa',
@@ -39,10 +51,12 @@ const statusLabels: Record<AppointmentStatus, string> = {
 };
 
 export default function Appointments() {
-  const { appointments, getPetById, getCustomerById, updateAppointmentStatus } = usePetShop();
+  const { appointments, getPetById, getCustomerById, updateAppointmentStatus, deleteAppointment } = usePetShop();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const filteredAppointments = appointments
     .filter((apt) => {
@@ -63,6 +77,16 @@ export default function Appointments() {
       return b.time.localeCompare(a.time);
     });
 
+  const handleDelete = (id: string) => {
+    deleteAppointment(id);
+    toast.success('Agendamento excluído com sucesso!');
+  };
+
+  const handleEdit = (appointment: Appointment) => {
+    setEditingAppointment(appointment);
+    setIsEditDialogOpen(true);
+  };
+
   return (
     <MainLayout>
       <div className="space-y-8">
@@ -76,8 +100,8 @@ export default function Appointments() {
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="hero" size="lg">
-                <Plus className="h-5 w-5" />
+              <Button className="gradient-primary text-primary-foreground" size="lg">
+                <Plus className="h-5 w-5 mr-2" />
                 Novo Agendamento
               </Button>
             </DialogTrigger>
@@ -86,6 +110,21 @@ export default function Appointments() {
             </DialogContent>
           </Dialog>
         </div>
+
+        {/* Edit Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            {editingAppointment && (
+              <AppointmentForm 
+                appointment={editingAppointment} 
+                onSuccess={() => {
+                  setIsEditDialogOpen(false);
+                  setEditingAppointment(null);
+                }} 
+              />
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-4">
@@ -119,7 +158,7 @@ export default function Appointments() {
             const customer = getCustomerById(apt.customerId);
 
             return (
-              <Card key={apt.id} variant="elevated" className="animate-fade-in">
+              <Card key={apt.id} className="animate-fade-in shadow-elevated">
                 <CardContent className="p-6">
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
@@ -151,7 +190,15 @@ export default function Appointments() {
                       <Badge variant="secondary">
                         {serviceLabels[apt.service]}
                       </Badge>
-                      <Badge variant={apt.status as any}>
+                      <Badge variant={
+                        apt.status === 'completed'
+                          ? 'default'
+                          : apt.status === 'in-progress'
+                          ? 'secondary'
+                          : apt.status === 'cancelled'
+                          ? 'destructive'
+                          : 'outline'
+                      }>
                         {statusLabels[apt.status]}
                       </Badge>
                     </div>
@@ -182,6 +229,42 @@ export default function Appointments() {
                           Concluir
                         </Button>
                       )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => handleEdit(apt)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Tem certeza que deseja excluir este agendamento?
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(apt.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                   {apt.notes && (

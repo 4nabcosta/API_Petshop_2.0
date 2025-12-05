@@ -1,28 +1,43 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePetShop } from '@/contexts/PetShopContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, Pencil } from 'lucide-react';
 import { customerSchema, CustomerFormData } from '@/lib/validations';
 import { ZodError } from 'zod';
+import { Customer } from '@/types';
 
 interface CustomerFormProps {
+  customer?: Customer;
   onSuccess?: () => void;
 }
 
-export function CustomerForm({ onSuccess }: CustomerFormProps) {
-  const { addCustomer } = usePetShop();
+export function CustomerForm({ customer, onSuccess }: CustomerFormProps) {
+  const { addCustomer, updateCustomer } = usePetShop();
+  const isEditing = !!customer;
+
   const [formData, setFormData] = useState<CustomerFormData>({
-    name: '',
-    email: '',
-    phone: '',
-    address: '',
+    name: customer?.name || '',
+    email: customer?.email || '',
+    phone: customer?.phone || '',
+    address: customer?.address || '',
   });
   const [errors, setErrors] = useState<Partial<Record<keyof CustomerFormData, string>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (customer) {
+      setFormData({
+        name: customer.name,
+        email: customer.email,
+        phone: customer.phone,
+        address: customer.address || '',
+      });
+    }
+  }, [customer]);
 
   const validateField = (field: keyof CustomerFormData, value: string) => {
     try {
@@ -41,18 +56,26 @@ export function CustomerForm({ onSuccess }: CustomerFormProps) {
 
     try {
       const validatedData = customerSchema.parse(formData);
+
+      if (isEditing && customer) {
+        updateCustomer(customer.id, {
+          name: validatedData.name,
+          email: validatedData.email,
+          phone: validatedData.phone,
+          address: validatedData.address || '',
+        });
+        toast.success('Cliente atualizado com sucesso!');
+      } else {
+        addCustomer({
+          name: validatedData.name,
+          email: validatedData.email,
+          phone: validatedData.phone,
+          address: validatedData.address || '',
+        });
+        toast.success('Cliente cadastrado com sucesso!');
+        setFormData({ name: '', email: '', phone: '', address: '' });
+      }
       
-      // TODO: Replace with API call when backend is ready
-      // await customerApi.create(validatedData);
-      addCustomer({
-        name: validatedData.name,
-        email: validatedData.email,
-        phone: validatedData.phone,
-        address: validatedData.address || '',
-      });
-      
-      toast.success('Cliente cadastrado com sucesso!');
-      setFormData({ name: '', email: '', phone: '', address: '' });
       setErrors({});
       onSuccess?.();
     } catch (error) {
@@ -65,7 +88,7 @@ export function CustomerForm({ onSuccess }: CustomerFormProps) {
         setErrors(fieldErrors);
         toast.error('Verifique os campos do formulário');
       } else {
-        toast.error('Erro ao cadastrar cliente');
+        toast.error(isEditing ? 'Erro ao atualizar cliente' : 'Erro ao cadastrar cliente');
       }
     } finally {
       setIsSubmitting(false);
@@ -73,11 +96,20 @@ export function CustomerForm({ onSuccess }: CustomerFormProps) {
   };
 
   return (
-    <Card variant="elevated">
+    <Card className="shadow-elevated border-0">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <UserPlus className="h-5 w-5 text-primary" />
-          Novo Cliente
+          {isEditing ? (
+            <>
+              <Pencil className="h-5 w-5 text-primary" />
+              Editar Cliente
+            </>
+          ) : (
+            <>
+              <UserPlus className="h-5 w-5 text-primary" />
+              Novo Cliente
+            </>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -152,7 +184,10 @@ export function CustomerForm({ onSuccess }: CustomerFormProps) {
           </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Cadastrando...' : 'Cadastrar Cliente'}
+            {isSubmitting 
+              ? (isEditing ? 'Atualizando...' : 'Cadastrando...') 
+              : (isEditing ? 'Atualizar Cliente' : 'Cadastrar Cliente')
+            }
           </Button>
         </form>
       </CardContent>
