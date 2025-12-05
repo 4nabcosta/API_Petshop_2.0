@@ -6,8 +6,14 @@ interface PetShopContextType {
   pets: Pet[];
   appointments: Appointment[];
   addCustomer: (customer: Omit<Customer, 'id' | 'createdAt'>) => void;
+  updateCustomer: (id: string, customer: Omit<Customer, 'id' | 'createdAt'>) => void;
+  deleteCustomer: (id: string) => void;
   addPet: (pet: Omit<Pet, 'id' | 'createdAt'>) => void;
+  updatePet: (id: string, pet: Omit<Pet, 'id' | 'createdAt'>) => void;
+  deletePet: (id: string) => void;
   addAppointment: (appointment: Omit<Appointment, 'id' | 'createdAt'>) => void;
+  updateAppointment: (id: string, appointment: Omit<Appointment, 'id' | 'createdAt'>) => void;
+  deleteAppointment: (id: string) => void;
   updateAppointmentStatus: (id: string, status: Appointment['status']) => void;
   getCustomerById: (id: string) => Customer | undefined;
   getPetById: (id: string) => Pet | undefined;
@@ -16,7 +22,6 @@ interface PetShopContextType {
 
 const PetShopContext = createContext<PetShopContextType | undefined>(undefined);
 
-// Sample data
 const sampleCustomers: Customer[] = [
   {
     id: '1',
@@ -141,6 +146,18 @@ export function PetShopProvider({ children }: { children: ReactNode }) {
     setCustomers((prev) => [...prev, newCustomer]);
   };
 
+  const updateCustomer = (id: string, customer: Omit<Customer, 'id' | 'createdAt'>) => {
+    setCustomers((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, ...customer } : c))
+    );
+  };
+
+  const deleteCustomer = (id: string) => {
+    setCustomers((prev) => prev.filter((c) => c.id !== id));
+    setPets((prev) => prev.filter((p) => p.customerId !== id));
+    setAppointments((prev) => prev.filter((a) => a.customerId !== id));
+  };
+
   const addPet = (pet: Omit<Pet, 'id' | 'createdAt'>) => {
     const newPet: Pet = {
       ...pet,
@@ -150,6 +167,17 @@ export function PetShopProvider({ children }: { children: ReactNode }) {
     setPets((prev) => [...prev, newPet]);
   };
 
+  const updatePet = (id: string, pet: Omit<Pet, 'id' | 'createdAt'>) => {
+    setPets((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, ...pet } : p))
+    );
+  };
+
+  const deletePet = (id: string) => {
+    setPets((prev) => prev.filter((p) => p.id !== id));
+    setAppointments((prev) => prev.filter((a) => a.petId !== id));
+  };
+
   const addAppointment = (appointment: Omit<Appointment, 'id' | 'createdAt'>) => {
     const newAppointment: Appointment = {
       ...appointment,
@@ -157,6 +185,16 @@ export function PetShopProvider({ children }: { children: ReactNode }) {
       createdAt: new Date(),
     };
     setAppointments((prev) => [...prev, newAppointment]);
+  };
+
+  const updateAppointment = (id: string, appointment: Omit<Appointment, 'id' | 'createdAt'>) => {
+    setAppointments((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, ...appointment } : a))
+    );
+  };
+
+  const deleteAppointment = (id: string) => {
+    setAppointments((prev) => prev.filter((a) => a.id !== id));
   };
 
   const updateAppointmentStatus = (id: string, status: Appointment['status']) => {
@@ -177,8 +215,14 @@ export function PetShopProvider({ children }: { children: ReactNode }) {
         pets,
         appointments,
         addCustomer,
+        updateCustomer,
+        deleteCustomer,
         addPet,
+        updatePet,
+        deletePet,
         addAppointment,
+        updateAppointment,
+        deleteAppointment,
         updateAppointmentStatus,
         getCustomerById,
         getPetById,

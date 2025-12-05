@@ -13,9 +13,9 @@ interface StatsCardProps {
   borderColor?: string;
 }
 
-export function StatsCard({ title, value, icon, trend, borderColor = 'border-primary' }: StatsCardProps) {
+export function StatsCard({ title, value, icon, trend, borderColor = 'border-l-primary' }: StatsCardProps) {
   return (
-    <Card variant="stat" className={cn('animate-slide-up', borderColor)}>
+    <Card className={cn('animate-slide-up border-l-4', borderColor)}>
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div>

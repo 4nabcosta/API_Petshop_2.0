@@ -51,14 +51,14 @@ export default function Dashboard() {
           <StatsCard
             title="Agendamentos Hoje"
             value={todayAppointments.length}
-            icon={<Calendar className="h-6 w-6 text-primary" />}
-            borderColor="border-l-primary"
+            icon={<Calendar className="h-6 w-6 text-secondary" />}
+            borderColor="border-l-secondary"
           />
           <StatsCard
             title="Concluídos Hoje"
             value={completedToday}
-            icon={<TrendingUp className="h-6 w-6 text-coral" />}
-            borderColor="border-l-coral"
+            icon={<TrendingUp className="h-6 w-6 text-primary" />}
+            borderColor="border-l-primary"
           />
         </div>
 

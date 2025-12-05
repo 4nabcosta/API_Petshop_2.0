@@ -16,8 +16,8 @@ export const customerSchema = z.object({
     .string()
     .trim()
     .min(1, { message: 'Telefone é obrigatório' })
-    .regex(/^\(\d{2}\)\s?\d{4,5}-\d{4}$/, { 
-      message: 'Telefone deve estar no formato (00) 00000-0000' 
+    .regex(/^\(\d{2}\)\s?\d{4,5}-\d{4}$/, {
+      message: 'Telefone deve estar no formato (00) 00000-0000'
     }),
   address: z
     .string()
@@ -82,11 +82,7 @@ export const appointmentSchema = z.object({
   }),
   date: z
     .string()
-    .min(1, { message: 'Data é obrigatória' })
-    .refine((val) => {
-      const date = new Date(val);
-      return date >= new Date(new Date().setHours(0, 0, 0, 0));
-    }, { message: 'Data não pode ser no passado' }),
+    .min(1, { message: 'Data é obrigatória' }),
   time: z
     .string()
     .min(1, { message: 'Horário é obrigatório' })

@@ -5,7 +5,6 @@ import {
   Users,
   PawPrint,
   Calendar,
-  Settings,
   Heart,
 } from 'lucide-react';
 
@@ -48,7 +47,7 @@ export function Sidebar() {
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                 )}
               >
-                <item.icon className={cn('h-5 w-5', isActive && 'text-primary')} />
+                <item.icon className="h-5 w-5" />
                 {item.label}
               </NavLink>
             );
@@ -57,12 +56,9 @@ export function Sidebar() {
 
         {/* Footer */}
         <div className="border-t border-border p-4">
-          <div className="flex items-center gap-3 rounded-lg bg-accent/50 px-4 py-3">
-            <Heart className="h-5 w-5 text-coral" />
-            <div className="text-xs">
-              <p className="font-medium text-foreground">Cuidando com amor</p>
-              <p className="text-muted-foreground">Desde 2024</p>
-            </div>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Heart className="h-3 w-3 text-coral" />
+            <span>Feito com amor para pets</span>
           </div>
         </div>
       </div>
